@@ -27,16 +27,12 @@ def set_voltage(ser, chip_select, channel, voltage):
 
 def zero_all_voltages():
     ser.write(f'<ZERO>\n'.encode())
-    line = CheckReadUntil(ser, "V\r\n")
-    if 'received' in line:
+    line = CheckReadUntil(ser, "Done zeroing.\r\n")
+    print(line)
+    if 'Done zeroing.' in line:
         print("All voltages set to zero")
     else:
-        parsing = line.split(" ")
-        if len(parsing) > 11:
-            voltage_readback = float(parsing[11])
-            print(f"Set all voltages to zero, readback: {voltage_readback}")
-        else:
-            print("Failed to set all voltages to zero")
+        print("Failed to set all voltages to zero")
 
 def set_individual_voltage():
     chip_select = int(chip_select_entry.get())
