@@ -19,7 +19,7 @@ coils_to_set_negative = [9,10,12,14,17,27,30,32,33,34,35,
 for coil in coils_to_set_negative:
     coil_sign[coil] = -1
 
-print(coil_sign)
+print("coil sign",coil_sign)
 
 def CheckReadUntil(ser, readUntil):
     outputCharacters = ""
@@ -68,34 +68,83 @@ def set_individual_voltage():
     if chip_select < 7 or chip_select > 10 or channel < 0 or channel > 15:
         print("Invalid chip select or channel number")
         return
-    #set_voltage(ser, chip_select, channel, voltage)
-    set_voltage(channel_number, current)
+    set_voltage(ser, chip_select, channel, voltage)
+   #set_voltage(channel_number, current)
+
+import csv
 
 def set_all_voltages():
-    with open('/home/amalajaison/tucan/arduino_python/current_control/squares/current.csv', 'r') as file:
-        for line in file:
-            if line.strip():  # Skip empty lines
-                try:
-                    channel, voltage = map(float, line.strip().split(" "))
-                    if channel < 0 or channel >  49:
-                        print("invalid  channel number")
-                        continue
-                    set_voltage(int(channel),voltage)
-                                         # Adjust the sleep time as needed
-                except ValueError:
-                   print("Error parsing line:", line)
-
-def plot_voltages():
-    all_chip_selects = []
-    all_voltages = []
     with open('channel_voltage_data.txt', 'r') as file:
         for line in file:
             if line.strip():  # Skip empty lines
                 try:
                     chip_select, channel, voltage = map(float, line.strip().split(" "))
+                    if chip_select < 7 or chip_select > 10 or channel < 0 or channel > 15:
+                        print("Invalid chip select or channel number")
+                        continue
+                    set_voltage(ser, int(chip_select), int(channel), voltage)
+                      # Adjust the sleep time as needed
+                except ValueError:
+                    print("Error parsing line:", line)
+
+def plot_voltages():
+    all_chip_selects = []
+    all_voltages = []
+    with open('current.csv', 'r') as file:
+        for line in file:
+            if line.strip():  # Skip empty lines
+                try:
+                    channel, voltage = map(float, line.strip().split(" "))
                     all_chip_selects.append((chip_select - 7) * 16 + channel)
                     all_voltages.append(voltage)
                 except ValueError:
+                    print("Error parsing line:", line)
+
+                    pass
+                   
+
+    plt.bar(all_chip_selects, all_voltages)
+    plt.xlabel('Channels')
+    plt.ylabel('Voltage')
+    plt.title('Voltages Set for All Channels')
+    plt.show()
+
+#def map_coil():
+    
+    
+
+def open_file_dialog():
+    file_path = filedialog.askopenfilename(initialdir="/", title="Select Voltage Values File", filetypes=(("Text files", "*.txt"), ("All files", "*.*")))
+    if file_path:
+        file_path_entry.delete(0, tk.END)
+        file_path_entry.insert(0, file_path)
+
+from functools import partial
+def cycle_coil():
+    global w,zfield
+    w=tk.Tk()
+    w.title("Cycle coil")
+    c=[]
+    for i in range(50):
+        c.append(tk.Button(w, text="%d"%i, command=partial(do_coil,i)))
+        c[i].grid(row=int(i/9), column=i%9, padx=5, pady=5)
+    close=tk.Button(w,text="Close",command=w.destroy)
+    close.grid(row=5, column=8, padx=5, pady=5)
+    zfield=tk.Label(w,text="zfield")
+    zfield.grid(row=6,column=0,columnspan=8)
+    
+def plot_voltages():
+    all_chip_selects = []
+    all_voltages = []
+    with open('current.csv', 'r') as file:
+        for line in file:
+            if line.strip():  # Skip empty lines
+                try:
+                    channel, voltage = map(float, line.strip().split(" "))
+                    all_chip_selects.append((chip_select - 7) * 16 + channel)
+                    all_voltages.append(voltage)
+                except ValueError:
+                    pass
                     print("Error parsing line:", line)
 
     plt.bar(all_chip_selects, all_voltages)
