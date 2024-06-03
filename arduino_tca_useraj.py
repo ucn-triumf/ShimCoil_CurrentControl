@@ -62,17 +62,34 @@ def mux_all_voltages():
                 print("Failed to change MUX")
 
 def set_individual_voltage():
-    chip_select = int(chip_select_entry.get())
-    channel = int(channel_entry.get())
-    voltage = float(voltage_entry.get())
+    chip_select=int(chip_select_entry.get())
+    channel=int(channel_entry.get())
+    voltage=float(voltage_entry.get())
     if chip_select < 7 or chip_select > 10 or channel < 0 or channel > 15:
         print("Invalid chip select or channel number")
         return
     set_voltage(ser, chip_select, channel, voltage)
-   #set_voltage(channel_number, current)
+  
 
 import csv
 
+def set_all_voltages():
+    with open('current.csv','r') as file:
+        for line in file:
+            if line.strip():  # Skip empty lines
+                try:
+                    coil,current=map(float,line.strip().split(","))
+                    coil=int(coil)
+                    current=float(current)
+                    if coil<0 or coil>49:
+                        print("Invalid coil %d"%(coil))
+                    else:
+                        print("Setting coil %2d %10.6f"%(coil,current))
+                        set_coil_current(coil,current)
+                except ValueError:
+                    print("Error parsing line:", line)
+
+'''
 def set_all_voltages():
     with open('channel_voltage_data.txt', 'r') as file:
         for line in file:
@@ -86,7 +103,7 @@ def set_all_voltages():
                       # Adjust the sleep time as needed
                 except ValueError:
                     print("Error parsing line:", line)
-
+'''
 def plot_voltages():
     all_chip_selects = []
     all_voltages = []
