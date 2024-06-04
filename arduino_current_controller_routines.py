@@ -68,8 +68,17 @@ class acc:
         i_readback=int(m.group(1))
         voltage_readback=float(m.group(2))
         print(f"Arduino confirms voltage for i {i_readback} is {voltage_readback}")
-        
-        
+
+    def set_voltage_now_cs_ch(self,cs,ch,voltage):
+        self.ser.write(f'<SET {cs} {ch} {voltage}>\n'.encode())
+        line=self.CheckReadUntil("V\r\n")
+        m=re.search("Setting CSbar (\d+) channel (\d+) to ([-+]?(\d+(\.\d*)?|\.\d+)([eE][-+]?\d+)?) V",line)
+        cs_readback=int(m.group(1))
+        ch_readback=int(m.group(2))
+        voltage_readback=float(m.group(3))
+        print(f"Arduino confirms voltage for CSbar {cs_readback} channel {ch_readback} is {voltage_readback}")
+
+
     def zero_all_voltages(self):
         self.ser.write(f'<ZERO>\n'.encode())
         line=self.CheckReadUntil(ser, "Done zeroing.\r\n")
