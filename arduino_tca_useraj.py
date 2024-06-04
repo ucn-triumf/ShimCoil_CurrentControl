@@ -6,20 +6,18 @@ import tkinter as tk
 from tkinter import filedialog
 import matplotlib.pyplot as plt
 
+import re
+
 coil_sign=[1]*50 # initialize all coil signs to 1
-print(coil_sign)
 
 # coils you want to set to -1
 coils_to_set_negative = [9,10,12,14,17,27,30,32,33,34,35,
                          43,44,45,46,47,49,24,25,26,
                          41,42,36,37,0,1,5,4,6,8]
-# need to fix:  9
 
 # change sign of coils to -1
 for coil in coils_to_set_negative:
     coil_sign[coil] = -1
-
-print("coil sign",coil_sign)
 
 def CheckReadUntil(ser, readUntil):
     outputCharacters = ""
@@ -267,7 +265,7 @@ root = tk.Tk()
 root.title("Current Control GUI")
 
 # Serial port connection
-ser=serial.Serial('/dev/ttyACM0', 9600, timeout=3)
+ser=serial.Serial('/dev/ttyACM0',115200,timeout=3)
 time.sleep(2)  # wait for the serial connection to initialize
 
 # Entry widgets
