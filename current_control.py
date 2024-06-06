@@ -54,9 +54,10 @@ def set_all_voltages():
                         print("Invalid coil %d"%(coil))
                     else:
                         print("Setting coil %2d %10.6f"%(coil,current))
-                        set_coil_current(coil,current)
+                        cc.set_current(coil,current)
                 except ValueError:
                     print("Error parsing line:", line)
+    cc.turn_on()
 
 def plot_voltages():
     all_chip_selects = []
