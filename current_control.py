@@ -15,6 +15,8 @@ coils_to_set_negative=[9,10,12,14,17,27,30,32,33,34,35,
                        43,44,45,46,47,49,24,25,26,
                        41,42,36,37,0,1,5,4,6,8]
 
+print("There are %d coils that are negative."%(len(coils_to_set_negative)))
+
 # change sign of coils to -1
 for coil in coils_to_set_negative:
     coil_sign[coil]=-1
