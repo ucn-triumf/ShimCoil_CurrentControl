@@ -1,10 +1,10 @@
-# Shimcoil_currentcontrol Index
+# Shimcoil Index
 
 > Auto-generated documentation index.
 
-A full list of `Shimcoil_currentcontrol` project modules.
+A full list of `Shimcoil` project modules.
 
-        - [Arduinocontroller](src/ShimCoil/ArduinoController.md#arduinocontroller)
-        - [Shimcontroller](src/ShimCoil/ShimController.md#shimcontroller)
-    - [Shimcoil](src/ShimCoil/index.md#shimcoil)
-        - [Version](src/ShimCoil/version.md#version)
+- [Arduinocontroller64](./ArduinoController64.md#arduinocontroller64)
+- [Arduinocontrollercs](./ArduinoControllerCS.md#arduinocontrollercs)
+- [Shimcontroller](./ShimController.md#shimcontroller)
+- [Version](./version.md#version)
