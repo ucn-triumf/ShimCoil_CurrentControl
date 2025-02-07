@@ -18,8 +18,8 @@ do
         # replace bad empty parentheses
         sed -i 's/()././' $file
 
-        # repace broken table of contents links
+        # replace broken table of contents links
         name=$(basename $file .md)
-        sed -i "s/#${name}()/#${name}/i" $file
+        sed -i "s/#${name}()/#${name}./i" $file
     fi
 done
