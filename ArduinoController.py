@@ -7,8 +7,9 @@ from datetime import datetime
 
 # TODO: this class needs testing, especially for readback values
 
-class ArduinoController:
-    """Arduino Current Controller. Opens a connection to the arduino to set currents on the coils
+class ArduinoControllerCS(object):
+    """Arduino Current Controller. Opens a connection to the arduino to set
+    currents on the coils. This version provides the simplest low-level access
 
     Args:
         device (str): name of the device to connect to
@@ -22,7 +23,7 @@ class ArduinoController:
         self.quiet = quiet
 
         # do a test read and print to stdout
-        first_read=self.readuntil("voltage>\r\n")
+        first_read = self.readuntil("voltage>\r\n")
         if not self.quiet:
             print(first_read)
 
@@ -60,6 +61,14 @@ class ArduinoController:
         """Prints all the voltages, currents, and calibration constants in volatile memory."""
         self._set(f'<PRI>', do_print=True)
 
+    def pwr_down(self, cs):
+        """Powers down all channels on a CSbar
+
+        Args:
+            cs (int): chip select bar [1, 4]
+        """
+        self._set(f'<PDO {cs}>\n', do_print=not self.quiet)
+
     def readuntil(self, stopchar):
         """Read output from arduino until stop string is found
 
@@ -88,6 +97,56 @@ class ArduinoController:
 
         return outputCharacters
 
+    def set_mux(self, cs, ch):
+        """Sets the MUX on CSbar cs to ch. The MUX is an output pin to readback the voltage set by the current supply.
+
+        Args:
+            cs (int): chip select bar [1, 4]
+            ch (int): channel number on that chip select [1, 8]
+        """
+        self._set(f'<MUX {cs} {ch}>\n', do_print=not self.quiet)
+
+    def setv(self, cs, ch, voltage):
+        """Set voltage based on hardware indexing.
+
+        Args:
+            cs (int): chip select bar [1, 4]
+            ch (int): channel number on that chip select [1, 8]
+            voltage (float): volts
+        """
+        readback = self._set(f'<SET {cs} {ch} {voltage}>\n', 'V')
+
+        if not self.quiet:
+            m = re.search("Setting CSbar (\d+) channel (\d+) to ([-+]?(\d+(\.\d*)?|\.\d+)([eE][-+]?\d+)?) V", readback)
+            cs_readback = int(m.group(1))
+            ch_readback = int(m.group(2))
+            voltage_readback = float(m.group(3))
+            print(f"Arduino confirms voltage for CSbar {cs_readback} channel {ch_readback} is {voltage_readback}")
+
+    def zero(self):
+        """Sets all 64 voltages to zero."""
+        readback = self._set(f'<ZERO>\n', 'Done zeroing.')
+
+        if not self.quiet:
+            if 'Done zeroing.' in readback:
+                print("All voltages set to zero")
+            else:
+                print("Failed to set all voltages to zero")
+
+class ArduinoController64(ArduinoControllerCS):
+    """Arduino Current Controller. Opens a connection to the arduino to set
+    currents on the coils.
+
+    This version provides access to the eeprom onboard storage as well as a
+    0 - 64 indexing for channel access. Channel mapping can be found in the
+    [arduino code](https://github.com/ucn-triumf/ShimCoil_SerialArduino)
+
+    Args:
+        device (str): name of the device to connect to
+        baudrate (int): 9600|115200
+        quiet (bool): if true, don't print message to stdout
+    """
+
     def read_eeprom(self):
         """Reads all voltages and calibration constants from EEPROM into volatile memory."""
         self._set(f'<REA>', do_print=not self.quiet)
@@ -111,15 +170,6 @@ class ArduinoController:
             i_readback=int(m.group(1))
             current_readback=float(m.group(2))
             print(f"Arduino confirms current for index {i_readback} is {current_readback}")
-
-    def set_mux(self, cs, ch):
-        """Sets the MUX on CSbar cs to ch. The MUX is an output pin to readback the voltage set by the current supply.
-
-        Args:
-            cs (int): chip select bar [1, 4]
-            ch (int): channel number on that chip select [1, 8]
-        """
-        readback = self._set(f'<MUX {cs} {ch}>\n', do_print=not self.quiet)
 
     def set_offset(self, i, current):
         """Sets offset in volatile memory for the set_current function  (convert between voltage and current).
@@ -181,35 +231,6 @@ class ArduinoController:
             voltage_readback=float(m.group(2))
             print(f"Arduino confirms voltage for index {i_readback} is {voltage_readback}")
 
-    def setv(self, cs, ch, voltage):
-        """Set voltage based on hardware indexing.
-
-        Args:
-            cs (int): chip select bar [1, 4]
-            ch (int): channel number on that chip select [1, 8]
-            voltage (float): volts
-        """
-        readback = self._set(f'<SET {cs} {ch} {voltage}>\n', 'V')
-
-        if not self.quiet:
-            m = re.search("Setting CSbar (\d+) channel (\d+) to ([-+]?(\d+(\.\d*)?|\.\d+)([eE][-+]?\d+)?) V", readback)
-            cs_readback = int(m.group(1))
-            ch_readback = int(m.group(2))
-            voltage_readback = float(m.group(3))
-            print(f"Arduino confirms voltage for CSbar {cs_readback} channel {ch_readback} is {voltage_readback}")
-
     def write_eeprom(self):
         """Writes all voltages and calibration constants from volatile memory to EEPROM. The values stored to EEPROM will automatically be read into volatile memory on next reboot or by connection made to arduino by serial port."""
         self._set(f'<WRI>', do_print=not self.quiet)
-
-    def zero(self):
-        """Sets all 64 voltages to zero."""
-        readback = self._set(f'<ZERO>\n', 'Done zeroing.')
-
-        if not self.quiet:
-            if 'Done zeroing.' in readback:
-                print("All voltages set to zero")
-            else:
-                print("Failed to set all voltages to zero")
-
-
