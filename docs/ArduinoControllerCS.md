@@ -19,13 +19,13 @@
     - [ArduinoController64.set_voltage](#arduinocontroller64()set_voltage)
     - [ArduinoController64.write_eeprom](#arduinocontroller64()write_eeprom)
   - [ArduinoControllerCS](#arduinocontrollercs)
-    - [ArduinoControllerCS._readuntil](#arduinocontrollercs()_readuntil)
-    - [ArduinoControllerCS._set](#arduinocontrollercs()_set)
-    - [ArduinoControllerCS.disconnect](#arduinocontrollercs()disconnect)
-    - [ArduinoControllerCS.pwr_down](#arduinocontrollercs()pwr_down)
-    - [ArduinoControllerCS.set_mux](#arduinocontrollercs()set_mux)
-    - [ArduinoControllerCS.setv](#arduinocontrollercs()setv)
-    - [ArduinoControllerCS.zero](#arduinocontrollercs()zero)
+    - [ArduinoControllerCS._readuntil](#ArduinoControllerCS_readuntil)
+    - [ArduinoControllerCS._set](#ArduinoControllerCS_set)
+    - [ArduinoControllerCS.disconnect](#ArduinoControllerCSdisconnect)
+    - [ArduinoControllerCS.pwr_down](#ArduinoControllerCSpwr_down)
+    - [ArduinoControllerCS.set_mux](#ArduinoControllerCSset_mux)
+    - [ArduinoControllerCS.setv](#ArduinoControllerCSsetv)
+    - [ArduinoControllerCS.zero](#ArduinoControllerCSzero)
 
 ## ArduinoController64
 

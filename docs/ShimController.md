@@ -11,15 +11,15 @@
 
 - [Shimcontroller](#shimcontroller)
   - [ShimController](#shimcontroller)
-    - [ShimController.disconnect](#shimcontroller()disconnect)
-    - [ShimController.read_setpoints](#shimcontroller()read_setpoints)
-    - [ShimController.set_all_setpoints](#shimcontroller()set_all_setpoints)
-    - [ShimController.set_current](#shimcontroller()set_current)
-    - [ShimController.set_mux](#shimcontroller()set_mux)
-    - [ShimController.set_voltage](#shimcontroller()set_voltage)
-    - [ShimController.write_setpoints](#shimcontroller()write_setpoints)
-    - [ShimController.zero_current](#shimcontroller()zero_current)
-    - [ShimController.zero_voltage](#shimcontroller()zero_voltage)
+    - [ShimController.disconnect](#ShimControllerdisconnect)
+    - [ShimController.read_setpoints](#ShimControllerread_setpoints)
+    - [ShimController.set_all_setpoints](#ShimControllerset_all_setpoints)
+    - [ShimController.set_current](#ShimControllerset_current)
+    - [ShimController.set_mux](#ShimControllerset_mux)
+    - [ShimController.set_voltage](#ShimControllerset_voltage)
+    - [ShimController.write_setpoints](#ShimControllerwrite_setpoints)
+    - [ShimController.zero_current](#ShimControllerzero_current)
+    - [ShimController.zero_voltage](#ShimControllerzero_voltage)
 
 ## ShimController
 

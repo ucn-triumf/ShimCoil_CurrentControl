@@ -20,6 +20,6 @@ do
 
         # repace broken table of contents links
         name=$(basename $file .md)
-        sed -i "s/#${name}()/#${name}/" $file
+        sed -i "s/#${name}()/#${name}/i" $file
     fi
 done
