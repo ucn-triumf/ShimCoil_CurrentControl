@@ -6,6 +6,10 @@ from .ArduinoController import ArduinoControllerCS
 import pandas as pd
 import numpy as np
 from datetime import datetime
+import os
+
+# path to data files
+data_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), '..', 'data')
 
 class ShimController(object):
     """This class provides high-level control for shim coils, set currents directly.
@@ -27,14 +31,14 @@ class ShimController(object):
         setpoints (pd.DataFrame): set currents and voltages
 
     Notes:
-        * this object writes to the file self.FILE_SETPOINTS every time a value is sent to the arduino. This ensures a record of the last set of values. It also allows the object to restore the last set of points. We can also save these values to a user-defined file and load that.
+        this object writes to the file self.FILE_SETPOINTS every time a value is sent to the arduino. This ensures a record of the last set of values. It also allows the object to restore the last set of points. We can also save these values to a user-defined file and load that.
     """
 
     # file for calibration constants
-    FILE_CALIBRATION = 'calibration.csv'
+    FILE_CALIBRATION = os.path.join(data_path, 'calibration.csv')
 
     # file for saving setpoints
-    FILE_SETPOINTS = 'setpoints.csv'
+    FILE_SETPOINTS = os.path.join(data_path, 'setpoints.csv')
 
     # number of shim coils
     NLOOPS = 64
