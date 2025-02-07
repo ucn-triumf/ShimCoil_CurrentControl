@@ -3,3 +3,4 @@ tkinter
 matplotlib
 numpy
 datetime
+pandas
