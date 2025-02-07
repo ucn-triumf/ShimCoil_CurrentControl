@@ -1,11 +1,12 @@
-#!/usr/bin/python3
 # routines to run arduino current controller
+# Derek Fujimoto (reinterpreted from Jeff Martin)
+# Feb 2025
 
 import serial
 import re
 from datetime import datetime
 
-# TODO: this class needs testing, especially for readback values
+# TODO: both classes needs testing, especially for readback values
 
 class ArduinoControllerCS(object):
     """Arduino Current Controller. Opens a connection to the arduino to set
@@ -23,53 +24,11 @@ class ArduinoControllerCS(object):
         self.quiet = quiet
 
         # do a test read and print to stdout
-        first_read = self.readuntil("voltage>\r\n")
+        first_read = self._readuntil("voltage>\r\n")
         if not self.quiet:
             print(first_read)
 
-    def _set(self, command, read_until='.', do_print=False):
-        """Base function for sending commands
-
-        Args:
-            command (str): of the format <command>. See commands listed [here](https://github.com/ucn-triumf/ShimCoil_SerialArduino)
-            read_until (str): end of readback
-            doprint (bool): if true print readback to stdout
-        """
-        # send command
-        self.ser.write(f'{command}'.encode())
-
-        # readback message from arduino and print to stdout
-        readback = self.readuntil(f"{read_until}\r\n")
-        if do_print:
-            print(f'{datetime.now()}: {readback}', flush=True)
-
-        return readback
-
-    def on(self):
-        """Turns on all currents to the values stored in volatile memory."""
-        self._set('<ONA>', do_print=not self.quiet)
-
-    def off(self):
-        """Turns on all currents to zero, but does not delete the values stored in volatile memory."""
-        self._set('<OFA>', do_print=not self.quiet)
-
-    def neg(self):
-        """Turns on all currents to the negative of the values stored in volatile memory."""
-        self._set('<ONN>', do_print=not self.quiet)
-
-    def print(self):
-        """Prints all the voltages, currents, and calibration constants in volatile memory."""
-        self._set(f'<PRI>', do_print=True)
-
-    def pwr_down(self, cs):
-        """Powers down all channels on a CSbar
-
-        Args:
-            cs (int): chip select bar [1, 4]
-        """
-        self._set(f'<PDO {cs}>\n', do_print=not self.quiet)
-
-    def readuntil(self, stopchar):
+    def _readuntil(self, stopchar):
         """Read output from arduino until stop string is found
 
         Args:
@@ -79,7 +38,7 @@ class ArduinoControllerCS(object):
             str: output message read from arduino
         """
 
-        outputCharacters=""
+        outputCharacters = ""
         while True:
             ch = self.ser.read().decode()
 
@@ -97,21 +56,47 @@ class ArduinoControllerCS(object):
 
         return outputCharacters
 
+    def _set(self, command, read_until='.', do_print=False):
+        """Base function for sending commands
+
+        Args:
+            command (str): of the format <command>. See commands listed [here](https://github.com/ucn-triumf/ShimCoil_SerialArduino)
+            read_until (str): end of readback
+            doprint (bool): if true print readback to stdout
+        """
+        # send command
+        self.ser.write(f'{command}'.encode())
+
+        # readback message from arduino and print to stdout
+        readback = self._readuntil(f"{read_until}\r\n")
+        if do_print:
+            print(f'{datetime.now()}: {readback}', flush=True)
+
+        return readback
+
+    def pwr_down(self, cs):
+        """Powers down all channels on a CSbar
+
+        Args:
+            cs (int): chip select bar 10|9|8|7
+        """
+        self._set(f'<PDO {cs}>\n', do_print=not self.quiet)
+
     def set_mux(self, cs, ch):
         """Sets the MUX on CSbar cs to ch. The MUX is an output pin to readback the voltage set by the current supply.
 
         Args:
-            cs (int): chip select bar [1, 4]
-            ch (int): channel number on that chip select [1, 8]
+            cs (int): chip select bar 10|9|8|7
+            ch (int): channel number on that chip select [0, 15]
         """
         self._set(f'<MUX {cs} {ch}>\n', do_print=not self.quiet)
 
     def setv(self, cs, ch, voltage):
-        """Set voltage based on hardware indexing.
+        """Set voltage based on hardware indexing and turn on that channel. Does not adjust volatile memory.
 
         Args:
-            cs (int): chip select bar [1, 4]
-            ch (int): channel number on that chip select [1, 8]
+            cs (int): chip select bar 10|9|8|7
+            ch (int): channel number on that chip select [0, 15]
             voltage (float): volts
         """
         readback = self._set(f'<SET {cs} {ch} {voltage}>\n', 'V')
@@ -124,7 +109,7 @@ class ArduinoControllerCS(object):
             print(f"Arduino confirms voltage for CSbar {cs_readback} channel {ch_readback} is {voltage_readback}")
 
     def zero(self):
-        """Sets all 64 voltages to zero."""
+        """Sets all 64 voltages to zero, does not adjust volatile memory."""
         readback = self._set(f'<ZERO>\n', 'Done zeroing.')
 
         if not self.quiet:
@@ -138,14 +123,30 @@ class ArduinoController64(ArduinoControllerCS):
     currents on the coils.
 
     This version provides access to the eeprom onboard storage as well as a
-    0 - 64 indexing for channel access. Channel mapping can be found in the
-    [arduino code](https://github.com/ucn-triumf/ShimCoil_SerialArduino)
+    0 - 64 indexing for channel access, in addition to onboard volatile memeory.
+    Channel mapping can be found in the [arduino code](https://github.com/ucn-triumf/ShimCoil_SerialArduino)
 
     Args:
         device (str): name of the device to connect to
         baudrate (int): 9600|115200
         quiet (bool): if true, don't print message to stdout
     """
+
+    def neg(self):
+        """Turns on all currents to the negative of the values stored in volatile memory."""
+        self._set('<ONN>', do_print=not self.quiet)
+
+    def off(self):
+        """Turns on all currents to zero, but does not delete the values stored in volatile memory."""
+        self._set('<OFA>', do_print=not self.quiet)
+
+    def on(self):
+        """Turns on all currents to the values stored in volatile memory."""
+        self._set('<ONA>', do_print=not self.quiet)
+
+    def print(self):
+        """Prints all the voltages, currents, and calibration constants in volatile memory."""
+        self._set(f'<PRI>', do_print=True)
 
     def read_eeprom(self):
         """Reads all voltages and calibration constants from EEPROM into volatile memory."""
