@@ -2,7 +2,7 @@
 # Derek Fujimoto
 # Feb 2025
 
-from ArduinoController import ArduinoControllerCS
+from .ArduinoController import ArduinoControllerCS
 import pandas as pd
 import numpy as np
 from datetime import datetime
@@ -27,10 +27,7 @@ class ShimController(object):
         setpoints (pd.DataFrame): set currents and voltages
 
     Notes:
-        this object writes to the file self.FILE_SETPOINTS every time a value is
-        sent to the arduino. This ensures a record of the last set of values. It
-        also allows the object to restore the last set of points. We can also save
-        these values to a user-defined file and load that.
+        * this object writes to the file self.FILE_SETPOINTS every time a value is sent to the arduino. This ensures a record of the last set of values. It also allows the object to restore the last set of points. We can also save these values to a user-defined file and load that.
     """
 
     # file for calibration constants
