@@ -4,7 +4,7 @@
 #
 # coil:    label of coils in the range [0, 63]
 # voltage: in volts, possibly calculated from slope and offset in calibration file
-# current: in amps
+# current: expected current in amps (note that the actual set quantity is the voltage)
 #
 # The arduino expects us to set a voltage. Thus when a current is requested we
 # do the following to calculate the voltage sent:
@@ -12,6 +12,8 @@
 # voltage = current * slope + offset
 #
 # default slope is 1/(40mA/10V) = 250 V/A
+#
+# if we set a voltage, we then calculate the expected current and save that
 #
 # (datetime)
 coil,voltage,current

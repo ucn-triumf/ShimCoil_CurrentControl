@@ -52,6 +52,7 @@ class ShimController(object):
         # update the dataframe with new values
         self.setpoints.loc[coil, 'current'] = current
         self.setpoints.loc[coil, 'voltage'] = voltage
+        self.write_setpoints()
 
     def set_all_setpoints(self):
         """Set all currents to their respective setpoints"""
@@ -116,7 +117,7 @@ class ShimController(object):
         self._update_setpoints(coil, voltage=volts, current=current)
 
     def read_setpoints(self, filename=None):
-        """Read setpoints file so as to load the last values set
+        """Read setpoints file so as to load the last values set. Expect columns "coil", "voltage", and "current" where only one of voltage or current is needed. "coil" must be the leftmost column.
 
         Args:
             filename (str): file path, if none use default self.FILE_SETPOINTS
@@ -127,7 +128,20 @@ class ShimController(object):
             filename = self.FILE_SETPOINTS
 
         # read
-        self.setpoints = pd.read_csv(filename, comment='#', index_col=0)
+        setpts = pd.read_csv(filename, comment='#', index_col=0)
+
+        # check columns and calculate those missing
+        if 'current' in setpts.columns and 'voltage' in setpts.columns:
+            pass
+        elif 'current' in setpts.columns and 'voltage' not in setpts.columns:
+            setpts['voltage'] = self.calib.slope*setpts.current + self.calib.offset
+        elif 'current' not in setpts.columns and 'voltage' in setpts.columns:
+            setpts['current'] = (setpts.voltage-self.calib.offset)/self.calib.slope
+        else:
+            raise RuntimeError('Need columns "current" and/or "voltage" in setpoints file.')
+
+        # set setpoints
+        self.setpoints = setpts
 
     def write_setpoints(self, filename=None):
         """Write setpoints file so as to save the last values set
