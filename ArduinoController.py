@@ -17,7 +17,7 @@ class ArduinoControllerCS(object):
         quiet (bool): if true, don't print message to stdout
     """
 
-    READ_TIMEOUT = 2 # s, timeout in s until error is thrown on readback
+    READ_TIMEOUT = 10 # s, timeout in s until error is thrown on readback
 
     def __init__(self, device, baudrate=115200, quiet=True):
 
@@ -28,6 +28,12 @@ class ArduinoControllerCS(object):
         first_read = self._readuntil("voltage>\r\n")
         if not self.quiet:
             print(f'{datetime.now()}: {first_read}')
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        self.disconnect()
 
     def _readuntil(self, stopchar):
         """Read output from arduino until stop string is found
@@ -82,6 +88,10 @@ class ArduinoControllerCS(object):
 
         return readback
 
+    def disconnect(self):
+        """Close the connection to the arduino"""
+        self.ser.close()
+
     def pwr_down(self, cs):
         """Powers down all channels on a CSbar
 
@@ -89,7 +99,6 @@ class ArduinoControllerCS(object):
             cs (int): chip select bar 10|9|8|7
         """
         self._set(f'PDO {cs}', do_print=not self.quiet)
-
 
     def set_mux(self, cs, ch):
         """Sets the MUX on CSbar cs to ch. The MUX is an output pin to readback the voltage set by the current supply.
