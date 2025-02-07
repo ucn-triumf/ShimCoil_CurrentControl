@@ -5,8 +5,7 @@
 import serial
 import re
 from datetime import datetime
-
-# TODO: both classes needs testing, especially for readback values
+import time
 
 class ArduinoControllerCS(object):
     """Arduino Current Controller. Opens a connection to the arduino to set
@@ -18,6 +17,8 @@ class ArduinoControllerCS(object):
         quiet (bool): if true, don't print message to stdout
     """
 
+    READ_TIMEOUT = 2 # s, timeout in s until error is thrown on readback
+
     def __init__(self, device, baudrate=115200, quiet=True):
 
         self.ser = serial.Serial(device, baudrate)
@@ -26,7 +27,7 @@ class ArduinoControllerCS(object):
         # do a test read and print to stdout
         first_read = self._readuntil("voltage>\r\n")
         if not self.quiet:
-            print(first_read)
+            print(f'{datetime.now()}: {first_read}')
 
     def _readuntil(self, stopchar):
         """Read output from arduino until stop string is found
@@ -39,6 +40,9 @@ class ArduinoControllerCS(object):
         """
 
         outputCharacters = ""
+
+        time_start = time.time()
+
         while True:
             ch = self.ser.read().decode()
 
@@ -54,6 +58,10 @@ class ArduinoControllerCS(object):
             if outputCharacters[-len(stopchar):] == stopchar:
                 break
 
+            # runtime timeout
+            if time.time() - time_start > self.READ_TIMEOUT:
+                raise RuntimeError(f'readuntil timeout! Expected endcharacter ({stopchar}) not receieved from arduino. Messages until now:\n{outputCharacters}')
+
         return outputCharacters
 
     def _set(self, command, read_until='.', do_print=False):
@@ -65,7 +73,7 @@ class ArduinoControllerCS(object):
             doprint (bool): if true print readback to stdout
         """
         # send command
-        self.ser.write(f'{command}'.encode())
+        self.ser.write(f'<{command}>\n'.encode())
 
         # readback message from arduino and print to stdout
         readback = self._readuntil(f"{read_until}\r\n")
@@ -80,7 +88,8 @@ class ArduinoControllerCS(object):
         Args:
             cs (int): chip select bar 10|9|8|7
         """
-        self._set(f'<PDO {cs}>\n', do_print=not self.quiet)
+        self._set(f'PDO {cs}', do_print=not self.quiet)
+
 
     def set_mux(self, cs, ch):
         """Sets the MUX on CSbar cs to ch. The MUX is an output pin to readback the voltage set by the current supply.
@@ -89,7 +98,7 @@ class ArduinoControllerCS(object):
             cs (int): chip select bar 10|9|8|7
             ch (int): channel number on that chip select [0, 15]
         """
-        self._set(f'<MUX {cs} {ch}>\n', do_print=not self.quiet)
+        self._set(f'MUX {cs} {ch}', do_print=not self.quiet)
 
     def setv(self, cs, ch, voltage):
         """Set voltage based on hardware indexing and turn on that channel. Does not adjust volatile memory.
@@ -99,24 +108,24 @@ class ArduinoControllerCS(object):
             ch (int): channel number on that chip select [0, 15]
             voltage (float): volts
         """
-        readback = self._set(f'<SET {cs} {ch} {voltage}>\n', 'V')
+        readback = self._set(f'SET {cs} {ch} {voltage}', 'V')
 
         if not self.quiet:
             m = re.search("Setting CSbar (\d+) channel (\d+) to ([-+]?(\d+(\.\d*)?|\.\d+)([eE][-+]?\d+)?) V", readback)
             cs_readback = int(m.group(1))
             ch_readback = int(m.group(2))
             voltage_readback = float(m.group(3))
-            print(f"Arduino confirms voltage for CSbar {cs_readback} channel {ch_readback} is {voltage_readback}")
+            print(f"{datetime.now()}: Arduino confirms voltage for CSbar {cs_readback} channel {ch_readback} is {voltage_readback}")
 
     def zero(self):
         """Sets all 64 voltages to zero, does not adjust volatile memory."""
-        readback = self._set(f'<ZERO>\n', 'Done zeroing.')
+        readback = self._set(f'ZERO', 'Done zeroing.')
 
         if not self.quiet:
             if 'Done zeroing.' in readback:
-                print("All voltages set to zero")
+                print(f"{datetime.now()}: All voltages set to zero")
             else:
-                print("Failed to set all voltages to zero")
+                print(f"{datetime.now()}: Failed to set all voltages to zero")
 
 class ArduinoController64(ArduinoControllerCS):
     """Arduino Current Controller. Opens a connection to the arduino to set
@@ -134,27 +143,27 @@ class ArduinoController64(ArduinoControllerCS):
 
     def neg(self):
         """Turns on all currents to the negative of the values stored in volatile memory."""
-        self._set('<ONN>', do_print=not self.quiet)
+        self._set('ONN', do_print=not self.quiet)
 
     def off(self):
         """Turns on all currents to zero, but does not delete the values stored in volatile memory."""
-        self._set('<OFA>', do_print=not self.quiet)
+        self._set('OFA', do_print=not self.quiet)
 
     def on(self):
         """Turns on all currents to the values stored in volatile memory."""
-        self._set('<ONA>', do_print=not self.quiet)
+        self._set('ONA', do_print=not self.quiet)
 
     def print(self):
         """Prints all the voltages, currents, and calibration constants in volatile memory."""
-        self._set(f'<PRI>', do_print=True)
+        self._set(f'PRI', do_print=True)
 
     def read_eeprom(self):
         """Reads all voltages and calibration constants from EEPROM into volatile memory."""
-        self._set(f'<REA>', do_print=not self.quiet)
+        self._set(f'REA', do_print=not self.quiet)
 
     def reset_eeprom(self):
         """Resets all voltages to zero, all calibration constants to default, and writes them all to the EEPROM. Obviously this means that everything that was in the EEPROM is lost."""
-        self._set(f'<RES>', do_print=not self.quiet)
+        self._set(f'RES', do_print=not self.quiet)
 
     def set_current(self, i, current):
         """Set a channel to a current
@@ -164,13 +173,13 @@ class ArduinoController64(ArduinoControllerCS):
             current (float): amps
         """
 
-        readback = self.set(f'<STC {i} {current}>\n', 'A')
+        readback = self._set(f'STC {i} {current}', 'A')
 
         if not self.quiet:
             m=re.search("Current (\d+) set to ([-+]?(\d+(\.\d*)?|\.\d+)([eE][-+]?\d+)?) A", readback)
             i_readback=int(m.group(1))
             current_readback=float(m.group(2))
-            print(f"Arduino confirms current for index {i_readback} is {current_readback}")
+            print(f"{datetime.now()}: Arduino confirms current for index {i_readback} is {current_readback}")
 
     def set_offset(self, i, current):
         """Sets offset in volatile memory for the set_current function  (convert between voltage and current).
@@ -182,9 +191,9 @@ class ArduinoController64(ArduinoControllerCS):
         Notes:
             current = slope*V+offset
         """
-        readback = self.set(f'<SOF {i} {current}>\n', 'A')
+        readback = self._set(f'SOF {i} {current}', 'A')
         if not self.quiet:
-            print(readback)
+            print(f'{datetime.now()}: Offset is {readback}')
 
     def set_slope(self, i, amps_per_volt):
         """Sets slope in volatile memory for the set_current function (convert between voltage and current).
@@ -196,9 +205,9 @@ class ArduinoController64(ArduinoControllerCS):
         Notes:
             current = slope*V+offset
         """
-        readback = self.set(f'<SSL {i} {amps_per_volt}>\n', 'A/V')
+        readback = self._set(f'SSL {i} {amps_per_volt}', 'A/V')
         if not self.quiet:
-            print(readback)
+            print(f'{datetime.now()}: Slope is {readback}')
 
     def set_temp_voltage(self, i, voltage):
         """Set a channel to a current and immediately turn on only that channel. Does not update voltage in volatile memory
@@ -207,13 +216,13 @@ class ArduinoController64(ArduinoControllerCS):
             i (int): index of channel to set, index defined in arduino code
             voltage (float): volts
         """
-        readback = self._set(f'<SVN {i} {voltage}>\n', 'V')
+        readback = self._set(f'SVN {i} {voltage}', 'V')
 
         if not self.quiet:
             m = re.search("voltage (\d+) to ([-+]?(\d+(\.\d*)?|\.\d+)([eE][-+]?\d+)?) V", readback)
             i_readback = int(m.group(1))
             voltage_readback = float(m.group(2))
-            print(f"Arduino confirms voltage for index {i_readback} is {voltage_readback}")
+            print(f"{datetime.now()}: Arduino confirms voltage for index {i_readback} is {voltage_readback}")
 
     def set_voltage(self, i, voltage):
         """Set a channel to a voltage in volatile memory.
@@ -223,15 +232,15 @@ class ArduinoController64(ArduinoControllerCS):
             voltage (float): volts
         """
         # set
-        readback = self._set(f'<STV {i} {voltage}>\n', 'V')
+        readback = self._set(f'STV {i} {voltage}', 'V')
 
         # print readback
         if not self.quiet:
             m = re.search("Voltage (\d+) set to ([-+]?(\d+(\.\d*)?|\.\d+)([eE][-+]?\d+)?) V", readback)
             i_readback=int(m.group(1))
             voltage_readback=float(m.group(2))
-            print(f"Arduino confirms voltage for index {i_readback} is {voltage_readback}")
+            print(f"{datetime.now()}: Arduino confirms voltage for index {i_readback} is {voltage_readback}")
 
     def write_eeprom(self):
         """Writes all voltages and calibration constants from volatile memory to EEPROM. The values stored to EEPROM will automatically be read into volatile memory on next reboot or by connection made to arduino by serial port."""
-        self._set(f'<WRI>', do_print=not self.quiet)
+        self._set(f'WRI', do_print=not self.quiet)
