@@ -92,7 +92,7 @@ class ArduinoController:
         """Reads all voltages and calibration constants from EEPROM into volatile memory."""
         self._set(f'<REA>', do_print=not self.quiet)
 
-    def reset(self):
+    def reset_eeprom(self):
         """Resets all voltages to zero, all calibration constants to default, and writes them all to the EEPROM. Obviously this means that everything that was in the EEPROM is lost."""
         self._set(f'<RES>', do_print=not self.quiet)
 
