@@ -2,7 +2,7 @@
 # Derek Fujimoto
 # Feb 2025
 
-from .ArduinoController import ArduinoControllerCS
+from .ArduinoControllerCS import ArduinoControllerCS
 import pandas as pd
 import numpy as np
 from datetime import datetime

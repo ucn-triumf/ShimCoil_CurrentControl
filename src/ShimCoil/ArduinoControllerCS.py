@@ -50,7 +50,7 @@ class ArduinoControllerCS(object):
         time_start = time.time()
 
         while True:
-            ch = self.ser.read().decode()
+            ch = self.ser.read.decode()
 
             # no message: stop
             if len(ch) == 0:
@@ -65,7 +65,7 @@ class ArduinoControllerCS(object):
                 break
 
             # runtime timeout
-            if time.time() - time_start > self.READ_TIMEOUT:
+            if time.time()- time_start > self.READ_TIMEOUT:
                 raise RuntimeError(f'readuntil timeout! Expected endcharacter ({stopchar}) not receieved from arduino. Messages until now:\n{outputCharacters}')
 
         return outputCharacters

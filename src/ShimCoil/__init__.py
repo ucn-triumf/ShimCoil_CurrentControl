@@ -1,2 +1,3 @@
-from .ArduinoController import ArduinoController64, ArduinoControllerCS
+from .ArduinoControllerCS import ArduinoControllerCS
+from .ArduinoController64 import ArduinoController64
 from .ShimController import ShimController
