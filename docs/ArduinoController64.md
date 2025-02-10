@@ -2,7 +2,7 @@
 
 [Shimcoil Index](./README.md#shimcoil-index) / Arduinocontroller64
 
-> Auto-generated documentation for [ArduinoController64](../../../ArduinoController64.py) module.
+> Auto-generated documentation for [ArduinoController64](../src/ShimCoil/ArduinoController64.py) module.
 
 - [Arduinocontroller64](#arduinocontroller64)
   - [ArduinoController64](#arduinocontroller64)
@@ -21,7 +21,7 @@
 
 ## ArduinoController64
 
-[Show source in ArduinoController64.py:9](../../../ArduinoController64.py#L9)
+[Show source in ArduinoController64.py:9](../src/ShimCoil/ArduinoController64.py#L9)
 
 Arduino Current Controller. Opens a connection to the arduino to set
 currents on the coils.
@@ -48,7 +48,7 @@ class ArduinoController64(ArduinoControllerCS): ...
 
 ### ArduinoController64.neg
 
-[Show source in ArduinoController64.py:23](../../../ArduinoController64.py#L23)
+[Show source in ArduinoController64.py:23](../src/ShimCoil/ArduinoController64.py#L23)
 
 Turns on all currents to the negative of the values stored in volatile memory.
 
@@ -60,7 +60,7 @@ def neg(self): ...
 
 ### ArduinoController64.off
 
-[Show source in ArduinoController64.py:27](../../../ArduinoController64.py#L27)
+[Show source in ArduinoController64.py:27](../src/ShimCoil/ArduinoController64.py#L27)
 
 Turns on all currents to zero, but does not delete the values stored in volatile memory.
 
@@ -72,7 +72,7 @@ def off(self): ...
 
 ### ArduinoController64.on
 
-[Show source in ArduinoController64.py:31](../../../ArduinoController64.py#L31)
+[Show source in ArduinoController64.py:31](../src/ShimCoil/ArduinoController64.py#L31)
 
 Turns on all currents to the values stored in volatile memory.
 
@@ -84,7 +84,7 @@ def on(self): ...
 
 ### ArduinoController64.print
 
-[Show source in ArduinoController64.py:35](../../../ArduinoController64.py#L35)
+[Show source in ArduinoController64.py:35](../src/ShimCoil/ArduinoController64.py#L35)
 
 Prints all the voltages, currents, and calibration constants in volatile memory.
 
@@ -96,7 +96,7 @@ def print(self): ...
 
 ### ArduinoController64.read_eeprom
 
-[Show source in ArduinoController64.py:39](../../../ArduinoController64.py#L39)
+[Show source in ArduinoController64.py:39](../src/ShimCoil/ArduinoController64.py#L39)
 
 Reads all voltages and calibration constants from EEPROM into volatile memory.
 
@@ -108,7 +108,7 @@ def read_eeprom(self): ...
 
 ### ArduinoController64.reset_eeprom
 
-[Show source in ArduinoController64.py:43](../../../ArduinoController64.py#L43)
+[Show source in ArduinoController64.py:43](../src/ShimCoil/ArduinoController64.py#L43)
 
 Resets all voltages to zero, all calibration constants to default, and writes them all to the EEPROM. Obviously this means that everything that was in the EEPROM is lost.
 
@@ -120,7 +120,7 @@ def reset_eeprom(self): ...
 
 ### ArduinoController64.set_current
 
-[Show source in ArduinoController64.py:47](../../../ArduinoController64.py#L47)
+[Show source in ArduinoController64.py:47](../src/ShimCoil/ArduinoController64.py#L47)
 
 Set a channel to a current
 
@@ -137,7 +137,7 @@ def set_current(self, i, current): ...
 
 ### ArduinoController64.set_offset
 
-[Show source in ArduinoController64.py:63](../../../ArduinoController64.py#L63)
+[Show source in ArduinoController64.py:63](../src/ShimCoil/ArduinoController64.py#L63)
 
 Sets offset in volatile memory for the set_current function  (convert between voltage and current).
 
@@ -158,7 +158,7 @@ def set_offset(self, i, current): ...
 
 ### ArduinoController64.set_slope
 
-[Show source in ArduinoController64.py:77](../../../ArduinoController64.py#L77)
+[Show source in ArduinoController64.py:77](../src/ShimCoil/ArduinoController64.py#L77)
 
 Sets slope in volatile memory for the set_current function (convert between voltage and current).
 
@@ -179,7 +179,7 @@ def set_slope(self, i, amps_per_volt): ...
 
 ### ArduinoController64.set_temp_voltage
 
-[Show source in ArduinoController64.py:91](../../../ArduinoController64.py#L91)
+[Show source in ArduinoController64.py:91](../src/ShimCoil/ArduinoController64.py#L91)
 
 Set a channel to a current and immediately turn on only that channel. Does not update voltage in volatile memory
 
@@ -196,7 +196,7 @@ def set_temp_voltage(self, i, voltage): ...
 
 ### ArduinoController64.set_voltage
 
-[Show source in ArduinoController64.py:106](../../../ArduinoController64.py#L106)
+[Show source in ArduinoController64.py:106](../src/ShimCoil/ArduinoController64.py#L106)
 
 Set a channel to a voltage in volatile memory.
 
@@ -213,7 +213,7 @@ def set_voltage(self, i, voltage): ...
 
 ### ArduinoController64.write_eeprom
 
-[Show source in ArduinoController64.py:123](../../../ArduinoController64.py#L123)
+[Show source in ArduinoController64.py:123](../src/ShimCoil/ArduinoController64.py#L123)
 
 Writes all voltages and calibration constants from volatile memory to EEPROM. The values stored to EEPROM will automatically be read into volatile memory on next reboot or by connection made to arduino by serial port.
 

@@ -21,5 +21,8 @@ do
         # replace broken table of contents links
         name=$(basename $file .md)
         sed -i "s/#${name}()/#${name}/i" $file
+
+        # replace broken code links
+        sed -i "s|../../../${name}.py|../src/ShimCoil/${name}.py|i" $file
     fi
 done

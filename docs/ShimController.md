@@ -2,7 +2,7 @@
 
 [Shimcoil Index](./README.md#shimcoil-index) / Shimcontroller
 
-> Auto-generated documentation for [ShimController](../../../ShimController.py) module.
+> Auto-generated documentation for [ShimController](../src/ShimCoil/ShimController.py) module.
 
 #### Attributes
 
@@ -23,7 +23,7 @@
 
 ## ShimController
 
-[Show source in ShimController.py:14](../../../ShimController.py#L14)
+[Show source in ShimController.py:14](../src/ShimCoil/ShimController.py#L14)
 
 #### Attributes
 
@@ -67,7 +67,7 @@ class ShimController(object):
 
 ### ShimController.disconnect
 
-[Show source in ShimController.py:81](../../../ShimController.py#L81)
+[Show source in ShimController.py:81](../src/ShimCoil/ShimController.py#L81)
 
 Close the serial connection to the arduino
 
@@ -79,7 +79,7 @@ def disconnect(self): ...
 
 ### ShimController.read_setpoints
 
-[Show source in ShimController.py:147](../../../ShimController.py#L147)
+[Show source in ShimController.py:147](../src/ShimCoil/ShimController.py#L147)
 
 Read setpoints file so as to load the last values set, write this to the arduino.
 
@@ -102,7 +102,7 @@ def read_setpoints(self, filename=None, setall=False): ...
 
 ### ShimController.set_all_setpoints
 
-[Show source in ShimController.py:85](../../../ShimController.py#L85)
+[Show source in ShimController.py:85](../src/ShimCoil/ShimController.py#L85)
 
 Set all currents to their respective setpoints
 
@@ -114,7 +114,7 @@ def set_all_setpoints(self): ...
 
 ### ShimController.set_current
 
-[Show source in ShimController.py:96](../../../ShimController.py#L96)
+[Show source in ShimController.py:96](../src/ShimCoil/ShimController.py#L96)
 
 Set the current in a coil by calculating the needed voltage
 
@@ -131,7 +131,7 @@ def set_current(self, coil, amps): ...
 
 ### ShimController.set_mux
 
-[Show source in ShimController.py:117](../../../ShimController.py#L117)
+[Show source in ShimController.py:117](../src/ShimCoil/ShimController.py#L117)
 
 Sets the MUX on circuit select bar to the channel corresponding to the coil id. The MUX is an output pin to readback the voltage set by the current supply.
 
@@ -147,7 +147,7 @@ def set_mux(self, coil): ...
 
 ### ShimController.set_voltage
 
-[Show source in ShimController.py:129](../../../ShimController.py#L129)
+[Show source in ShimController.py:129](../src/ShimCoil/ShimController.py#L129)
 
 Directly set the voltage
 
@@ -164,7 +164,7 @@ def set_voltage(self, coil, volts): ...
 
 ### ShimController.write_setpoints
 
-[Show source in ShimController.py:183](../../../ShimController.py#L183)
+[Show source in ShimController.py:183](../src/ShimCoil/ShimController.py#L183)
 
 Write setpoints file so as to save the last values set
 
@@ -180,7 +180,7 @@ def write_setpoints(self, filename=None): ...
 
 ### ShimController.zero_current
 
-[Show source in ShimController.py:212](../../../ShimController.py#L212)
+[Show source in ShimController.py:212](../src/ShimCoil/ShimController.py#L212)
 
 Set coils to zero current using calibrated offsets
 
@@ -192,7 +192,7 @@ def zero_current(self): ...
 
 ### ShimController.zero_voltage
 
-[Show source in ShimController.py:217](../../../ShimController.py#L217)
+[Show source in ShimController.py:217](../src/ShimCoil/ShimController.py#L217)
 
 Set all coils to zero voltage
 
