@@ -6,10 +6,10 @@ from .ArduinoControllerCS import ArduinoControllerCS
 import pandas as pd
 import numpy as np
 from datetime import datetime
-import os
+import os, shutil
 
 # path to data files
-data_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), '..', 'data')
+data_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'data')
 
 class ShimController(object):
     """This class provides high-level control for shim coils, set currents directly.
@@ -51,10 +51,9 @@ class ShimController(object):
         self.calib = pd.read_csv(self.FILE_CALIBRATION, comment='#', index_col=0)
 
         # setup current setpoints dataframe
-        if os.path.isfile(self.FILE_SETPOINTS):
-            self.read_setpoints(setall=False)
-        else:
-            self.read_setpoints(os.path.join(data_path, self.FILE_SETPOINTS), setall=False)
+        if not os.path.isfile(self.FILE_SETPOINTS):
+            shutil.copyfile(os.path.join(data_path, self.FILE_SETPOINTS), self.FILE_SETPOINTS)
+        self.read_setpoints(setall=False)
 
         # connect to device
         self.arduino = ArduinoControllerCS(device, quiet=not debug)

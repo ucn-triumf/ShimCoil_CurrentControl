@@ -50,7 +50,7 @@ class ArduinoControllerCS(object):
         time_start = time.time()
 
         while True:
-            ch = self.ser.read.decode()
+            ch = self.ser.read().decode()
 
             # no message: stop
             if len(ch) == 0:
