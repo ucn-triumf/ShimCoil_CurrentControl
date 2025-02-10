@@ -90,11 +90,13 @@ class ShimController(object):
         for coil in self.setpoints.index:
             cal = self.calib.loc[coil]
 
+            if self.debug:
+                print(f'Setting coil {coil} ({cal.cs, cal.ch}) to {self.setpoints.loc[coil, "voltage"]}V')
+
+
             # set voltage
             self.arduino.setv(cal.cs, cal.ch, self.setpoints.loc[coil, 'voltage'])
 
-            if self.debug:
-                print(f'Set coil {coil} ({cal.cs, cal.ch}) to {self.setpoints.loc[coil, "voltage"]}V')
 
     def set_current(self, coil, amps):
         """Set the current in a coil by calculating the needed voltage
@@ -111,8 +113,7 @@ class ShimController(object):
         voltage = cal.slope*amps + cal.offset
 
         if self.debug:
-            print(f'Calculated {voltage}V needed for coil {coil} to get {amps}A')
-            print(f'Setting CS {cal.cs}, CH {cal.ch} to {voltage}V')
+            print(f'Coil {coil} ({cal.cs}, {cal.ch}): Setting a voltage of {voltage}V in order to get {amps}A')
 
         # set and save
         self.arduino.setv(cal.cs, cal.ch, voltage)
@@ -141,17 +142,18 @@ class ShimController(object):
         # get calibration constants for this coil
         cal = self.calib.loc[coil]
 
+        # calculate the corresponding current
+        current = (volts-cal.offset)/cal.slope
+
+        if self.debug:
+            print(f'Coil {coil} ({cal.cs}, {cal.ch}): Setting a voltage of {volts}V should result in {current}A')
+
         # set voltage
         self.arduino.setv(cal.cs, cal.ch, volts)
 
-        # calculate the corresponding current
-        current = (volts-cal.offset)/cal.slope
-        self.arduino.setv(cal.cs, cal.ch, volts)
+        # track result
         self._update_setpoints(coil, voltage=volts, current=current)
 
-        if self.debug:
-            print(f'Calculated {current}A resulting from a voltag set of {volts}V, coil {coil}')
-            print(f'Setting CS {cal.cs}, CH {cal.ch} to {volts}V')
 
     def read_setpoints(self, filename=None, setall=False):
         """Read setpoints file so as to load the last values set, write this to the arduino.
@@ -185,6 +187,9 @@ class ShimController(object):
 
         # set setpoints
         self.setpoints = setpts
+
+        if self.debug:
+            print(f'Read setpoints from {filename}:\n{setpts}')
 
         if setall:
             self.set_all_setpoints()
