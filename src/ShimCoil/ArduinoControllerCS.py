@@ -50,7 +50,7 @@ class ArduinoControllerCS(object):
         time_start = time.time()
 
         while True:
-            ch = self.ser.read.decode()
+            ch = self.ser.read().decode()
 
             # no message: stop
             if len(ch) == 0:
@@ -117,6 +117,10 @@ class ArduinoControllerCS(object):
             ch (int): channel number on that chip select [0, 15]
             voltage (float): volts
         """
+
+        if abs(voltage) > 10:
+            raise RuntimeError(f'Requested voltage ({voltage}V) is too high. Voltages must be less than 10V in magnitude. ')
+
         readback = self._set(f'SET {cs} {ch} {voltage}', 'V')
 
         if not self.quiet:

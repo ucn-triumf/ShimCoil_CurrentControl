@@ -6,10 +6,10 @@ from .ArduinoControllerCS import ArduinoControllerCS
 import pandas as pd
 import numpy as np
 from datetime import datetime
-import os
+import os, shutil
 
 # path to data files
-data_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), '..', 'data')
+data_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'data')
 
 class ShimController(object):
     """This class provides high-level control for shim coils, set currents directly.
@@ -51,10 +51,9 @@ class ShimController(object):
         self.calib = pd.read_csv(self.FILE_CALIBRATION, comment='#', index_col=0)
 
         # setup current setpoints dataframe
-        if os.path.isfile(self.FILE_SETPOINTS):
-            self.read_setpoints(setall=False)
-        else:
-            self.read_setpoints(os.path.join(data_path, self.FILE_SETPOINTS), setall=False)
+        if not os.path.isfile(self.FILE_SETPOINTS):
+            shutil.copyfile(os.path.join(data_path, self.FILE_SETPOINTS), self.FILE_SETPOINTS)
+        self.read_setpoints(setall=False)
 
         # connect to device
         self.arduino = ArduinoControllerCS(device, quiet=not debug)
@@ -78,6 +77,10 @@ class ShimController(object):
         self.setpoints.loc[coil, 'voltage'] = voltage
         self.write_setpoints()
 
+    def close(self):
+        """Alias for disconnect"""
+        return self.disconnect()
+
     def disconnect(self):
         """Close the serial connection to the arduino"""
         self.arduino.disconnect()
@@ -87,11 +90,13 @@ class ShimController(object):
         for coil in self.setpoints.index:
             cal = self.calib.loc[coil]
 
+            if self.debug:
+                print(f'Setting coil {coil} ({cal.cs, cal.ch}) to {self.setpoints.loc[coil, "voltage"]}V')
+
+
             # set voltage
             self.arduino.setv(cal.cs, cal.ch, self.setpoints.loc[coil, 'voltage'])
 
-            if self.debug:
-                print(f'Set coil {coil} to {self.setpoints.loc[coil, "voltage"]}V')
 
     def set_current(self, coil, amps):
         """Set the current in a coil by calculating the needed voltage
@@ -108,7 +113,7 @@ class ShimController(object):
         voltage = cal.slope*amps + cal.offset
 
         if self.debug:
-            print(f'Calculated {voltage}V needed for coil {coil} to get {amps}A')
+            print(f'Coil {coil} ({cal.cs}, {cal.ch}): Setting a voltage of {voltage}V in order to get {amps}A')
 
         # set and save
         self.arduino.setv(cal.cs, cal.ch, voltage)
@@ -137,12 +142,18 @@ class ShimController(object):
         # get calibration constants for this coil
         cal = self.calib.loc[coil]
 
+        # calculate the corresponding current
+        current = (volts-cal.offset)/cal.slope
+
+        if self.debug:
+            print(f'Coil {coil} ({cal.cs}, {cal.ch}): Setting a voltage of {volts}V should result in {current}A')
+
         # set voltage
         self.arduino.setv(cal.cs, cal.ch, volts)
 
-        # calculate the corresponding current
-        current = (volts-cal.offset)/cal.slope
+        # track result
         self._update_setpoints(coil, voltage=volts, current=current)
+
 
     def read_setpoints(self, filename=None, setall=False):
         """Read setpoints file so as to load the last values set, write this to the arduino.
@@ -176,6 +187,9 @@ class ShimController(object):
 
         # set setpoints
         self.setpoints = setpts
+
+        if self.debug:
+            print(f'Read setpoints from {filename}:\n{setpts}')
 
         if setall:
             self.set_all_setpoints()
