@@ -11,15 +11,15 @@
 
 - [Shimcontroller](#shimcontroller)
   - [ShimController](#shimcontroller)
-    - [ShimController.disconnect](#ShimController.disconnect)
-    - [ShimController.read_setpoints](#ShimController.read_setpoints)
-    - [ShimController.set_all_setpoints](#ShimController.set_all_setpoints)
-    - [ShimController.set_current](#ShimController.set_current)
-    - [ShimController.set_mux](#ShimController.set_mux)
-    - [ShimController.set_voltage](#ShimController.set_voltage)
-    - [ShimController.write_setpoints](#ShimController.write_setpoints)
-    - [ShimController.zero_current](#ShimController.zero_current)
-    - [ShimController.zero_voltage](#ShimController.zero_voltage)
+    - [ShimController.disconnect](#ShimControllerdisconnect)
+    - [ShimController.read_setpoints](#ShimControllerread_setpoints)
+    - [ShimController.set_all_setpoints](#ShimControllerset_all_setpoints)
+    - [ShimController.set_current](#ShimControllerset_current)
+    - [ShimController.set_mux](#ShimControllerset_mux)
+    - [ShimController.set_voltage](#ShimControllerset_voltage)
+    - [ShimController.write_setpoints](#ShimControllerwrite_setpoints)
+    - [ShimController.zero_current](#ShimControllerzero_current)
+    - [ShimController.zero_voltage](#ShimControllerzero_voltage)
 
 ## ShimController
 
@@ -29,7 +29,7 @@
 
 - `FILE_CALIBRATION` - file for calibration constants: os.path.join(data_path, 'calibration.csv')
 
-- `FILE_SETPOINTS` - file for saving setpoints: os.path.join(data_path, 'setpoints.csv')
+- `FILE_SETPOINTS` - file for saving setpoints: 'setpoints.csv'
 
 - `NLOOPS` - number of shim coils: 64
 
@@ -67,7 +67,7 @@ class ShimController(object):
 
 ### ShimController.disconnect
 
-[Show source in ShimController.py:78](../../../ShimController.py#L78)
+[Show source in ShimController.py:81](../../../ShimController.py#L81)
 
 Close the serial connection to the arduino
 
@@ -79,7 +79,7 @@ def disconnect(self): ...
 
 ### ShimController.read_setpoints
 
-[Show source in ShimController.py:144](../../../ShimController.py#L144)
+[Show source in ShimController.py:147](../../../ShimController.py#L147)
 
 Read setpoints file so as to load the last values set, write this to the arduino.
 
@@ -102,7 +102,7 @@ def read_setpoints(self, filename=None, setall=False): ...
 
 ### ShimController.set_all_setpoints
 
-[Show source in ShimController.py:82](../../../ShimController.py#L82)
+[Show source in ShimController.py:85](../../../ShimController.py#L85)
 
 Set all currents to their respective setpoints
 
@@ -114,7 +114,7 @@ def set_all_setpoints(self): ...
 
 ### ShimController.set_current
 
-[Show source in ShimController.py:93](../../../ShimController.py#L93)
+[Show source in ShimController.py:96](../../../ShimController.py#L96)
 
 Set the current in a coil by calculating the needed voltage
 
@@ -131,7 +131,7 @@ def set_current(self, coil, amps): ...
 
 ### ShimController.set_mux
 
-[Show source in ShimController.py:114](../../../ShimController.py#L114)
+[Show source in ShimController.py:117](../../../ShimController.py#L117)
 
 Sets the MUX on circuit select bar to the channel corresponding to the coil id. The MUX is an output pin to readback the voltage set by the current supply.
 
@@ -147,7 +147,7 @@ def set_mux(self, coil): ...
 
 ### ShimController.set_voltage
 
-[Show source in ShimController.py:126](../../../ShimController.py#L126)
+[Show source in ShimController.py:129](../../../ShimController.py#L129)
 
 Directly set the voltage
 
@@ -164,7 +164,7 @@ def set_voltage(self, coil, volts): ...
 
 ### ShimController.write_setpoints
 
-[Show source in ShimController.py:180](../../../ShimController.py#L180)
+[Show source in ShimController.py:183](../../../ShimController.py#L183)
 
 Write setpoints file so as to save the last values set
 
@@ -180,7 +180,7 @@ def write_setpoints(self, filename=None): ...
 
 ### ShimController.zero_current
 
-[Show source in ShimController.py:209](../../../ShimController.py#L209)
+[Show source in ShimController.py:212](../../../ShimController.py#L212)
 
 Set coils to zero current using calibrated offsets
 
@@ -192,7 +192,7 @@ def zero_current(self): ...
 
 ### ShimController.zero_voltage
 
-[Show source in ShimController.py:214](../../../ShimController.py#L214)
+[Show source in ShimController.py:217](../../../ShimController.py#L217)
 
 Set all coils to zero voltage
 

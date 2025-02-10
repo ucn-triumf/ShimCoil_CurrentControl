@@ -6,13 +6,13 @@
 
 - [Arduinocontrollercs](#arduinocontrollercs)
   - [ArduinoControllerCS](#arduinocontrollercs)
-    - [ArduinoControllerCS._readuntil](#ArduinoControllerCS._readuntil)
-    - [ArduinoControllerCS._set](#ArduinoControllerCS._set)
-    - [ArduinoControllerCS.disconnect](#ArduinoControllerCS.disconnect)
-    - [ArduinoControllerCS.pwr_down](#ArduinoControllerCS.pwr_down)
-    - [ArduinoControllerCS.set_mux](#ArduinoControllerCS.set_mux)
-    - [ArduinoControllerCS.setv](#ArduinoControllerCS.setv)
-    - [ArduinoControllerCS.zero](#ArduinoControllerCS.zero)
+    - [ArduinoControllerCS._readuntil](#ArduinoControllerCS_readuntil)
+    - [ArduinoControllerCS._set](#ArduinoControllerCS_set)
+    - [ArduinoControllerCS.disconnect](#ArduinoControllerCSdisconnect)
+    - [ArduinoControllerCS.pwr_down](#ArduinoControllerCSpwr_down)
+    - [ArduinoControllerCS.set_mux](#ArduinoControllerCSset_mux)
+    - [ArduinoControllerCS.setv](#ArduinoControllerCSsetv)
+    - [ArduinoControllerCS.zero](#ArduinoControllerCSzero)
 
 ## ArduinoControllerCS
 
