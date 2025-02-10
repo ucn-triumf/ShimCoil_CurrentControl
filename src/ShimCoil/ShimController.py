@@ -38,7 +38,7 @@ class ShimController(object):
     FILE_CALIBRATION = os.path.join(data_path, 'calibration.csv')
 
     # file for saving setpoints
-    FILE_SETPOINTS = os.path.join(data_path, 'setpoints.csv')
+    FILE_SETPOINTS = 'setpoints.csv'
 
     # number of shim coils
     NLOOPS = 64
@@ -51,7 +51,10 @@ class ShimController(object):
         self.calib = pd.read_csv(self.FILE_CALIBRATION, comment='#', index_col=0)
 
         # setup current setpoints dataframe
-        self.read_setpoints(setall=False)
+        if os.path.isfile(self.FILE_SETPOINTS):
+            self.read_setpoints(setall=False)
+        else:
+            self.read_setpoints(os.path.join(data_path, self.FILE_SETPOINTS), setall=False)
 
         # connect to device
         self.arduino = ArduinoControllerCS(device, quiet=not debug)
