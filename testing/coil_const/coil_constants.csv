@@ -1,0 +1,8 @@
+# Coil constants measured on March 6
+# Columns:
+#       coil: coil id
+#       slope: V/nT conversion from field to
+#       offset: V   voltage offset
+#       dslope, doffset: errors in the above, same units
+#
+coil,slope,offset,dslope,doffset
