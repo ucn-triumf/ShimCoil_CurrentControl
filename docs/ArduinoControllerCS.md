@@ -137,7 +137,7 @@ def setv(self, cs, ch, voltage): ...
 
 ### ArduinoControllerCS.zero
 
-[Show source in ArduinoControllerCS.py:129](../src/ShimCoil/ArduinoControllerCS.py#L129)
+[Show source in ArduinoControllerCS.py:133](../src/ShimCoil/ArduinoControllerCS.py#L133)
 
 Sets all 64 voltages to zero, does not adjust volatile memory.
 
