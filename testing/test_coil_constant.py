@@ -13,17 +13,24 @@ from tqdm import tqdm
 import matplotlib as mpl
 
 # settings
-coil = 17
-npts = 20
-sleep_duration = 1 # seconds
+coil = 37
+npts = 5
+sleep_duration = 2 # seconds
 setpoints = np.linspace(-10, 10, npts) # voltages to set
 V2nT = 1e4 # multiply this to get nT from volts output of fluxgate
+gain = 50
 outfile = 'coil_const/coil_constants.csv' # save coil constants here
 
-np.random.shuffle(setpoints)
+# 35; fixed pin; no current
+# 34; fixed solder; current ok
+# 33; fixed solder; current ok; shorted?
+# 6;  ch ok; pin ok; solder ok; roomc ok; no current
 
-print('Voltage setpoints')
-print('\n'.join(setpoints.astype(str)))
+np.random.shuffle(setpoints)
+plt.close('all')
+
+#print('Voltage setpoints')
+#print('\n'.join(setpoints.astype(str)))
 
 # drawing style
 mpl.rcParams['axes.linewidth'] = 1.5
@@ -68,6 +75,7 @@ with ShimController('COM4') as shim:
 
         # set voltage and wait for scope to populate
         shim.set_voltage(coil, v)
+        time.sleep(0.25)
         scope.run()
         time.sleep(sleep_duration)
 
@@ -78,8 +86,8 @@ with ShimController('COM4') as shim:
     shim.set_voltage(coil, 0)
 
 # convert units to nT
-read_mean *= V2nT
-read_std *= V2nT
+read_mean *= V2nT/gain
+read_std *= V2nT/gain
 
 # fit - b assumed to be true background + internal offset
 fitfn = lambda x, a, b: a*x+b
@@ -87,6 +95,7 @@ par, cov = curve_fit(fitfn, setpoints, read_mean, sigma=read_std, absolute_sigma
 std = np.diag(cov)**0.5
 
 # draw
+plt.figure()
 plt.errorbar(setpoints, read_mean, read_std, fmt='o', fillstyle='none')
 plt.plot(setpoints, fitfn(setpoints, *par))
 plt.xlabel('Set Voltage (V)')

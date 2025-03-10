@@ -60,7 +60,7 @@ class ShimController(object):
 
         # rezero
         if zeroed:
-            self.zero_voltage()
+            self.zero('voltage')
 
         # write values to arduino
         self.set_all_setpoints()
@@ -80,17 +80,17 @@ class ShimController(object):
 
         # calculate missing paramters
         if current is not None:
-            assert voltage is not None or field is not None, 'Only one of current, voltage, field can be not None'
+            assert voltage is None or field is None, 'Only one of current, voltage, field can be not None'
             voltage = (current-cal.offset_i) / cal.slope_i
             field = voltage*cal.slope_b + cal.offset_b
             setby = 'current'
         elif voltage is not None:
-            assert current is not None or field is not None, 'Only one of current, voltage, field can be not None'
+            assert current is None and field is None, 'Only one of current, voltage, field can be not None'
             current = voltage*cal.slope_i + cal.offset_i
             field = voltage*cal.slope_b + cal.offset_b
             setby = 'voltage'
         elif field is not None:
-            assert voltage is not None or current is not None, 'Only one of current, voltage, field can be not None'
+            assert voltage is None or current is None, 'Only one of current, voltage, field can be not None'
             voltage = (current-cal.offset_b) / cal.slope_b
             current = voltage*cal.slope_i + cal.offset_i
             setby = 'field'

@@ -3,24 +3,25 @@
 # Feb 2025
 
 from ShimCoil import ShimController
-from SiglentDevices import SDS5034
+from SiglentDevices import Keithley_DMM6500
 import time
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 from tqdm import tqdm
-
+from scipy.optimize import curve_fit
 import matplotlib as mpl
 
 
 # settings
-coil = 17
-npts = 20
+coil = 37
+npts = 50
 setpoints = np.linspace(-10, 10, npts)
 np.random.shuffle(setpoints)
+plt.close('all')
 
-print('Voltage setpoints')
-print('\n'.join(setpoints.astype(str)))
+# print('Voltage setpoints')
+# print('\n'.join(setpoints.astype(str)))
 
 # drawing style
 mpl.rcParams['axes.linewidth'] = 1.5
@@ -55,28 +56,31 @@ mpl.rcParams['font.size'] = 16.0
 
 
 # save results
-read_mean = np.zeros(npts)
-read_std = np.zeros(npts)
+measurements = np.zeros(npts)
 
 # setup connections
-scope = SDS5034('tucan-scope1.triumf.ca')
+dmm = Keithley_DMM6500()
 
 with ShimController('COM4') as shim:
     for i,v in tqdm(enumerate(setpoints), desc='Setting coil voltages', total=npts):
 
         # set voltage and wait for scope to populate
         shim.set_voltage(coil, v)
-        scope.run()
-        time.sleep(5)
 
-        # get readback
-        read_mean[i] = scope.get_measure_adv_value(1)
-        read_std[i]  = scope.get_measure_adv_value(2)
+        # get a bunch of measurements
+        measurements[i] = dmm.get_volt_dc()
 
     shim.set_voltage(coil, 0)
 
+# fit
+fn = lambda x, a, b: a*x+b
+par, cov = curve_fit(fn, setpoints, measurements)
+
+print(f'slope: {par[0]}')
+
 # draw
-plt.errorbar(setpoints, read_mean, read_std, fmt='o', fillstyle='none')
+plt.plot(setpoints, measurements, '.')
+plt.plot(setpoints, fn(setpoints, *par))
 plt.xlabel('Set Voltage (V)')
 plt.ylabel('Read Voltage (V)')
 plt.title(f'Coil {coil}')
