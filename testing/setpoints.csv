@@ -15,7 +15,7 @@
 #
 # if we set a voltage, we then calculate the expected current and save that
 #
-# 2025-03-07 15:00:08.463220
+# 2025-03-17 14:00:17.604114
 coil,voltage,current,setby,field
 0,0.0,0.0,voltage,0.0
 1,0.0,0.0,voltage,0.0

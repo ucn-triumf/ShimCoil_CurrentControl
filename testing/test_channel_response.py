@@ -14,11 +14,13 @@ import matplotlib as mpl
 
 
 # settings
-coil = 37
+coil = 17
 npts = 50
 setpoints = np.linspace(-10, 10, npts)
 np.random.shuffle(setpoints)
 plt.close('all')
+
+# working: 60,61,62, 63
 
 # print('Voltage setpoints')
 # print('\n'.join(setpoints.astype(str)))
@@ -61,7 +63,7 @@ measurements = np.zeros(npts)
 # setup connections
 dmm = Keithley_DMM6500()
 
-with ShimController('COM4') as shim:
+with ShimController('COM4', debug=True) as shim:
     for i,v in tqdm(enumerate(setpoints), desc='Setting coil voltages', total=npts):
 
         # set voltage and wait for scope to populate

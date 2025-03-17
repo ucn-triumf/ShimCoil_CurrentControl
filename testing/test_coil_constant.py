@@ -13,18 +13,13 @@ from tqdm import tqdm
 import matplotlib as mpl
 
 # settings
-coil = 37
+coil = 33
 npts = 5
-sleep_duration = 2 # seconds
+sleep_duration = 3 # seconds
 setpoints = np.linspace(-10, 10, npts) # voltages to set
 V2nT = 1e4 # multiply this to get nT from volts output of fluxgate
 gain = 50
 outfile = 'coil_const/coil_constants.csv' # save coil constants here
-
-# 35; fixed pin; no current
-# 34; fixed solder; current ok
-# 33; fixed solder; current ok; shorted?
-# 6;  ch ok; pin ok; solder ok; roomc ok; no current
 
 np.random.shuffle(setpoints)
 plt.close('all')
