@@ -81,18 +81,18 @@ class ShimController(object):
         # calculate missing paramters
         if current is not None:
             assert voltage is None or field is None, 'Only one of current, voltage, field can be not None'
-            voltage = (current-cal.offset_i) / cal.slope_i
-            field = voltage*cal.slope_b + cal.offset_b
+            voltage = (current-cal.offset_i) * cal.slope_i
+            field = voltage/cal.slope_b + cal.offset_b
             setby = 'current'
         elif voltage is not None:
             assert current is None and field is None, 'Only one of current, voltage, field can be not None'
-            current = voltage*cal.slope_i + cal.offset_i
-            field = voltage*cal.slope_b + cal.offset_b
+            current = voltage/cal.slope_i + cal.offset_i
+            field = voltage/cal.slope_b + cal.offset_b
             setby = 'voltage'
         elif field is not None:
             assert voltage is None or current is None, 'Only one of current, voltage, field can be not None'
-            voltage = (current-cal.offset_b) / cal.slope_b
-            current = voltage*cal.slope_i + cal.offset_i
+            voltage = (current-cal.offset_b) * cal.slope_b
+            current = voltage/cal.slope_i + cal.offset_i
             setby = 'field'
         else:
             raise RuntimeError('Missing field, current, or voltage input')
