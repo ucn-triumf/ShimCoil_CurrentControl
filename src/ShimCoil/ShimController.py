@@ -71,7 +71,7 @@ class ShimController(object):
     def __exit__(self, exc_type, exc_value, traceback):
         self.disconnect()
 
-    def _update_setpoints(self, coil, current=None, voltage=None, field=None):
+    def _update_setpoints(self, coil, current=None, voltage=None, field=None, do_set=True):
         # update the dataframe with new values
         # use only one of the current, voltage, or field to set the values
 
@@ -102,7 +102,8 @@ class ShimController(object):
             print(f'Setting coil {coil} ({cal.cs, cal.ch}) to {self.setpoints.loc[coil, "voltage"]}V ({current}A, {field}nT, set by {setby})')
 
         # set the voltage
-        self.arduino.setv(cal.cs, cal.ch, voltage)
+        if do_set:
+            self.arduino.setv(cal.cs, cal.ch, voltage)
 
         # save the inputs
         self.setpoints.loc[coil, 'current'] = current
@@ -111,6 +112,12 @@ class ShimController(object):
         self.setpoints.loc[coil, 'setby'] = setby
         self.write_setpoints()
 
+    def _zero_voltage(self):
+        # fast method for zeroing all voltages
+        self.arduino.zero()
+        for coil in self.setpoints.index:
+            self._update_setpoints(coil, voltage=0, do_set=False)
+
     def close(self):
         """Alias for disconnect"""
         return self.disconnect()
@@ -118,6 +125,12 @@ class ShimController(object):
     def disconnect(self):
         """Close the serial connection to the arduino"""
         self.arduino.disconnect()
+
+    def invert(self):
+        """Invert all voltages by multiplying their values by -1"""
+        self.arduino.setv_all_nmem()
+        for coil in self.calib.index:
+            self._update_setpoints(coil, voltage=-1*self.calib.loc[coil, 'voltage'], do_set=False)
 
     def set_all_setpoints(self):
         """Set all currents to their respective setpoints"""
@@ -263,12 +276,14 @@ class ShimController(object):
         # select mode
         mode = mode.lower()
         if mode in 'voltage' or mode == 'v':
-            method = self.set_voltage
+            self._zero_voltage()
+            method = None
         elif mode in 'current' or mode == 'i':
             method = self.set_current
         elif mode in 'field' or mode == 'b':
             method = self.set_field
 
         # set
-        for i in self.calib.index:
-            method(i, 0)
+        if method is not None:
+            for i in self.calib.index:
+                method(i, 0)
