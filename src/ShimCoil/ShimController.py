@@ -99,7 +99,7 @@ class ShimController(object):
 
         # debug
         if self.debug:
-            print(f'Setting coil {coil} ({cal.cs, cal.ch}) to {self.setpoints.loc[coil, "voltage"]}V ({current}A, {field}nT, set by {setby})')
+            print(f'Setting coil {coil} ({cal.cs}, {cal.ch}) to {self.setpoints.loc[coil, "voltage"]}V ({current}A, {field}nT, set by {setby})')
 
         # set the voltage
         if do_set:
@@ -132,8 +132,8 @@ class ShimController(object):
     def invert(self):
         """Invert all voltages by multiplying their values by -1"""
         self.arduino.setv_all_nmem()
-        for coil in self.calib.index:
-            self._update_setpoints(coil, voltage=-1*self.calib.loc[coil, 'voltage'],
+        for coil in self.setpoints.index:
+            self._update_setpoints(coil, voltage=-1*self.setpoints.loc[coil, 'voltage'],
                                    do_set=False, do_write=False)
         self.write_setpoints()
 
@@ -143,7 +143,7 @@ class ShimController(object):
             cal = self.calib.loc[coil]
 
             if self.debug:
-                print(f'Setting coil {coil} ({cal.cs, cal.ch}) to {self.setpoints.loc[coil, "voltage"]}V')
+                print(f'Setting coil {coil} ({cal.cs}, {cal.ch}) to {self.setpoints.loc[coil, "voltage"]}V', flush=True)
 
             # set voltage
             self.arduino.setv(cal.cs, cal.ch, self.setpoints.loc[coil, 'voltage'])
