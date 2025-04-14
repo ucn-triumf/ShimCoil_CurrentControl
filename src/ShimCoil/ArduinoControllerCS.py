@@ -35,7 +35,7 @@ class ArduinoControllerCS(object):
     def __exit__(self, exc_type, exc_value, traceback):
         self.disconnect()
 
-    def _readuntil(self, stopchar):
+    def _readuntil(self):
         """Read output from arduino until stop string is found
 
         Args:
@@ -61,16 +61,16 @@ class ArduinoControllerCS(object):
                 outputCharacters += ch
 
             # check for end condition
-            if outputCharacters[-len(stopchar):] == stopchar:
+            if outputCharacters[-1] == '#':
                 break
 
             # runtime timeout
             if time.time()- time_start > self.READ_TIMEOUT:
-                raise RuntimeError(f'readuntil timeout! Expected endcharacter ({stopchar}) not receieved from arduino. Messages until now:\n{outputCharacters}')
+                raise RuntimeError(f'readuntil timeout! Expected endcharacter (#) not receieved from arduino. Messages until now:\n{outputCharacters}')
 
         return outputCharacters
 
-    def _set(self, command, read_until='.', do_print=False):
+    def _cmd(self, command, do_print=False):
         """Base function for sending commands
 
         Args:
@@ -82,9 +82,9 @@ class ArduinoControllerCS(object):
         self.ser.write(f'<{command}>\n'.encode())
 
         # readback message from arduino and print to stdout
-        readback = self._readuntil(f"{read_until}\r\n")
+        readback = self._readuntil(f"#\r\n")
         if do_print:
-            print(f'{datetime.now()}: {readback}', flush=True)
+            print(f'{datetime.now()}: {readback[:-1]}', flush=True)
 
         return readback
 
@@ -92,13 +92,25 @@ class ArduinoControllerCS(object):
         """Close the connection to the arduino"""
         self.ser.close()
 
+    def mem_read(self):
+        """read to volatile memory from onboard storage"""
+        self._cmd('ERD')
+
+    def mem_reset(self):
+        """reset volatile memory to zero"""
+        self._cmd('ERST')
+
+    def mem_write(self):
+        """write volatile memory to onboard storage"""
+        self._cmd('EWR')
+
     def pwr_down(self, cs):
         """Powers down all channels on a CSbar
 
         Args:
             cs (int): chip select bar 10|9|8|7
         """
-        self._set(f'PDO {cs}', do_print=not self.quiet)
+        self._cmd(f'PWR {cs}', do_print=not self.quiet)
 
     def set_mux(self, cs, ch):
         """Sets the MUX on CSbar cs to ch. The MUX is an output pin to readback the voltage set by the current supply.
@@ -107,10 +119,10 @@ class ArduinoControllerCS(object):
             cs (int): chip select bar 10|9|8|7
             ch (int): channel number on that chip select [0, 15]
         """
-        self._set(f'MUX {cs} {ch}', do_print=not self.quiet)
+        self._cmd(f'MUX {cs} {ch}', do_print=not self.quiet)
 
     def setv(self, cs, ch, voltage):
-        """Set voltage based on hardware indexing and turn on that channel. Does not adjust volatile memory.
+        """Set voltage based on hardware indexing and turn on that channel
 
         Args:
             cs (int): chip select bar 10|9|8|7
@@ -121,21 +133,51 @@ class ArduinoControllerCS(object):
         if abs(voltage) > 10:
             raise RuntimeError(f'Requested voltage ({voltage}V) is too high. Voltages must be less than 10V in magnitude. ')
 
-        readback = self._set(f'SET {cs} {ch} {voltage}', 'V')
+        readback = self._cmd(f'SET {cs} {ch} {voltage}')
 
         if not self.quiet:
-            m = re.search("Setting CSbar (\d+) channel (\d+) to ([-+]?(\d+(\.\d*)?|\.\d+)([eE][-+]?\d+)?) V", readback)
+            m = re.search("Setting CSbar (\d+) channel (\d+) to ([-+]?(\d+(\.\d*)?|\.\d+)([eE][-+]?\d+)?) V#", readback)
             cs_readback = int(m.group(1))
             ch_readback = int(m.group(2))
             voltage_readback = float(m.group(3))
             print(f"{datetime.now()}: Arduino confirms voltage for CSbar {cs_readback} channel {ch_readback} is {voltage_readback}")
 
-    def zero(self):
-        """Sets all 64 voltages to zero, does not adjust volatile memory."""
-        readback = self._set(f'ZERO', 'Done zeroing.')
+    def setv_from_mem(self, cs, ch):
+        """Set a voltage from the volatile memory
+
+        Args:
+            cs (int): chip select bar 10|9|8|7
+            ch (int): channel number on that chip select [0, 15]
+        """
+        readback = self._cmd(f'ESET {cs} {ch}')
 
         if not self.quiet:
-            if 'Done zeroing.' in readback:
+            m = re.search("Setting CSbar (\d+) channel (\d+) to ([-+]?(\d+(\.\d*)?|\.\d+)([eE][-+]?\d+)?) V#", readback)
+            cs_readback = int(m.group(1))
+            ch_readback = int(m.group(2))
+            voltage_readback = float(m.group(3))
+            print(f"{datetime.now()}: Arduino confirms voltage for CSbar {cs_readback} channel {ch_readback} is {voltage_readback}")
+
+    def setv_all_mem(self):
+        """Set all voltages from the volatile memory saved values"""
+        readback = self._cmd(f'ESTA')
+
+        if not self.quiet:
+            print(f'{readback[:-1]}')
+
+    def setv_all_nmem(self):
+        """Set all voltages to -1 * the volatile memory saved values"""
+        readback = self._cmd(f'ENEG')
+
+        if not self.quiet:
+            print(f'{readback[:-1]}')
+
+    def zero(self):
+        """Sets all 64 voltages to zero, does not adjust volatile memory."""
+        readback = self._cmd(f'ZERO', 'Done zeroing.')
+
+        if not self.quiet:
+            if 'Done zeroing' in readback:
                 print(f"{datetime.now()}: All voltages set to zero")
             else:
                 print(f"{datetime.now()}: Failed to set all voltages to zero")
