@@ -23,11 +23,13 @@ class ShimController(object):
         device (str): connect to a device at this location
         zeroed (bool): if true, start and don't set setpoints, otherwise set according to last set values'
         debug (bool): if true, print debugging statements
+        fast (bool): if true, do not write setpoints DataFrame to file after each operation
 
     Attributes:
         arduino (ArduinoControllerCS): talk to arduino
         calib (pd.DataFrame): calibration constants and channel mapping
         debug (bool): if true print debug statements
+        fast (bool): if true not do not write setpoints DataFrame to file after each operation
         setpoints (pd.DataFrame): set currents and voltages
 
     Notes:
@@ -43,9 +45,10 @@ class ShimController(object):
     # number of shim coils
     NLOOPS = 64
 
-    def __init__(self, device, zeroed=True, debug=False):
+    def __init__(self, device, zeroed=True, debug=False, fast=False):
 
         self.debug = debug
+        self.fast = fast
 
         # get calibration file
         self.calib = pd.read_csv(self.FILE_CALIBRATION, comment='#', index_col=0)
@@ -119,7 +122,9 @@ class ShimController(object):
         self.arduino.zero()
         for coil in self.setpoints.index:
             self._update_setpoints(coil, voltage=0, do_set=False, do_write=False)
-        self.write_setpoints()
+
+        if not self.fast:
+            self.write_setpoints()
 
     def close(self):
         """Alias for disconnect"""
@@ -135,7 +140,8 @@ class ShimController(object):
         for coil in self.setpoints.index:
             self._update_setpoints(coil, voltage=-1*self.setpoints.loc[coil, 'voltage'],
                                    do_set=False, do_write=False)
-        self.write_setpoints()
+        if not self.fast:
+            self.write_setpoints()
 
     def set_all_setpoints(self):
         """Set all currents to their respective setpoints"""
@@ -156,7 +162,7 @@ class ShimController(object):
             amps (float): current in amps
             do_write (bool): write setpoints dataframe to file
         """
-        self._update_setpoints(coil, current=amps, do_write=do_write)
+        self._update_setpoints(coil, current=amps, do_write=do_write and not self.fast)
 
     def set_field(self, coil, nT, do_write=True):
         """Set the current in a coil by calculating the needed voltage
@@ -167,7 +173,7 @@ class ShimController(object):
             do_write (bool): write setpoints dataframe to file
         """
         # set and save
-        self._update_setpoints(coil, field=nT, do_write=do_write)
+        self._update_setpoints(coil, field=nT, do_write=do_write and not self.fast)
 
     def set_mux(self, coil):
         """Sets the MUX on circuit select bar to the channel corresponding to the coil id. The MUX is an output pin to readback the voltage set by the current supply.
@@ -189,8 +195,7 @@ class ShimController(object):
             volts (float): voltage in volts
             do_write (bool): write setpoints dataframe to file
         """
-        self._update_setpoints(coil, voltage=volts, do_write=do_write)
-
+        self._update_setpoints(coil, voltage=volts, do_write=do_write and not self.fast)
 
     def read_setpoints(self, filename=None, setall=False):
         """Read setpoints file so as to load the last values set, write this to the arduino.
@@ -296,4 +301,6 @@ class ShimController(object):
         if method is not None:
             for i in self.calib.index:
                 method(i, 0, do_write=False)
-            self.write_setpoints()
+
+            if not self.fast:
+                self.write_setpoints()
