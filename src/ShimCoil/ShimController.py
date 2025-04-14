@@ -71,7 +71,7 @@ class ShimController(object):
     def __exit__(self, exc_type, exc_value, traceback):
         self.disconnect()
 
-    def _update_setpoints(self, coil, current=None, voltage=None, field=None, do_set=True):
+    def _update_setpoints(self, coil, current=None, voltage=None, field=None, do_set=True, do_write=True):
         # update the dataframe with new values
         # use only one of the current, voltage, or field to set the values
 
@@ -110,13 +110,16 @@ class ShimController(object):
         self.setpoints.loc[coil, 'voltage'] = voltage
         self.setpoints.loc[coil, 'field'] = field
         self.setpoints.loc[coil, 'setby'] = setby
-        self.write_setpoints()
+
+        if do_write:
+            self.write_setpoints()
 
     def _zero_voltage(self):
         # fast method for zeroing all voltages
         self.arduino.zero()
         for coil in self.setpoints.index:
-            self._update_setpoints(coil, voltage=0, do_set=False)
+            self._update_setpoints(coil, voltage=0, do_set=False, do_write=False)
+        self.write_setpoints()
 
     def close(self):
         """Alias for disconnect"""
@@ -130,7 +133,9 @@ class ShimController(object):
         """Invert all voltages by multiplying their values by -1"""
         self.arduino.setv_all_nmem()
         for coil in self.calib.index:
-            self._update_setpoints(coil, voltage=-1*self.calib.loc[coil, 'voltage'], do_set=False)
+            self._update_setpoints(coil, voltage=-1*self.calib.loc[coil, 'voltage'],
+                                   do_set=False, do_write=False)
+        self.write_setpoints()
 
     def set_all_setpoints(self):
         """Set all currents to their respective setpoints"""
@@ -143,24 +148,26 @@ class ShimController(object):
             # set voltage
             self.arduino.setv(cal.cs, cal.ch, self.setpoints.loc[coil, 'voltage'])
 
-    def set_current(self, coil, amps):
+    def set_current(self, coil, amps, do_write=True):
         """Set the current in a coil by calculating the needed voltage
 
         Args:
-            coil: id of the coil
-            amps: current in amps
+            coil (int): id of the coil
+            amps (float): current in amps
+            do_write (bool): write setpoints dataframe to file
         """
-        self._update_setpoints(coil, current=amps)
+        self._update_setpoints(coil, current=amps, do_write=do_write)
 
-    def set_field(self, coil, nT):
+    def set_field(self, coil, nT, do_write=True):
         """Set the current in a coil by calculating the needed voltage
 
         Args:
-            coil: id of the coil
-            nT: field in nT
+            coil (int): id of the coil
+            nT (float): field in nT
+            do_write (bool): write setpoints dataframe to file
         """
         # set and save
-        self._update_setpoints(coil, field=nT)
+        self._update_setpoints(coil, field=nT, do_write=do_write)
 
     def set_mux(self, coil):
         """Sets the MUX on circuit select bar to the channel corresponding to the coil id. The MUX is an output pin to readback the voltage set by the current supply.
@@ -174,14 +181,16 @@ class ShimController(object):
         # set the mux
         self.arduino.set_mux(cal.cs, cal.ch)
 
-    def set_voltage(self, coil, volts):
+    def set_voltage(self, coil, volts, do_write=True):
         """Directly set the voltage
 
         Args:
-            coil: id of the coil
-            volts: voltage in volts
+            coil (int): id of the coil
+            volts (float): voltage in volts
+            do_write (bool): write setpoints dataframe to file
         """
-        self._update_setpoints(coil, voltage=volts)
+        self._update_setpoints(coil, voltage=volts, do_write=do_write)
+
 
     def read_setpoints(self, filename=None, setall=False):
         """Read setpoints file so as to load the last values set, write this to the arduino.
@@ -286,4 +295,5 @@ class ShimController(object):
         # set
         if method is not None:
             for i in self.calib.index:
-                method(i, 0)
+                method(i, 0, do_write=False)
+            self.write_setpoints()
